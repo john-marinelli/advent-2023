@@ -20,36 +20,45 @@ def find_adjacent(x, y, mat):
     adj.append(mat[min(m, x+1)][min(n, y+1)])
     adj.append(mat[x][min(n, y+1)])
     adj.append(mat[min(m, x+1)][y])
+    adj.append(mat[min(m, x+1)][max(0, y-1)])
+    adj.append(mat[max(0, x-1)][min(n, y+1)])
+
     return adj
 
 
 def find_full_number(x, arr):
-    res = [arr[x]]
+    res = []
+    res.append(arr[x])
     last_idx = x
-    for k in range(x, 0):
-        if arr[k].isnumeric():
-            res.insert(0, arr[k])
-    for k in range(x, len(arr)):
-        if arr[k].isnumeric():
-            res.append(arr[k])
-            if k == len(arr) - 1:
+    if x < len(arr) - 1:
+        for k in range(x+1, len(arr)):
+            if arr[k].isnumeric():
+                res.append(arr[k])
                 last_idx = k
-        else:
-            last_idx = k
-            break
+            else:
+                break
+    if x > 0:
+        k = x - 1
+        while k >= 0:
+            if arr[k].isnumeric():
+                res.insert(0, arr[k])
+                k -= 1
+            else:
+                break
 
-    return int("".join(res)), last_idx
+    res = int("".join(res))
+
+    return res, last_idx + 1
 
 
 if __name__ == "__main__":
     schematic = load_schematic("input.txt")
     valid_nums = []
     j = 0
-    print(schematic[85][137])
     for i, row in enumerate(schematic):
         j = 0
         while j < len(row):
-            if schematic[i][j] in numbers and any(
+            if schematic[i][j].isnumeric() and any(
                 [x not in symbols for x in find_adjacent(i, j, schematic)]
             ):
                 num, j = find_full_number(j, row)
