@@ -6,12 +6,6 @@ def load_schematic(path):
 
     return schematic
 
-def is_neighbor(point1, point2):
-    if point1[0] != point2[0]:
-        return False
-    if abs(point1[1]-point2[1]) > 1:
-        return False
-    return True
 
 def get_adj_nums(x, y, mat):
     adj = []
@@ -113,14 +107,13 @@ def get_full_num(y, col):
 def get_pairs(schem):
     result = []
     for i, row in enumerate(schem):
-        for j, col in enumerate(row):
+        for j, _ in enumerate(row):
             if schem[i][j] == "*":
                 adjacent_cells = get_adj_nums(i, j, schem)
                 if len(adjacent_cells) == 2:
                     full_nums = []
                     for n in adjacent_cells:
                         full_nums.append(get_full_num(n[1], schem[n[0]]))
-                    print(full_nums)
                     result.append(full_nums[0] * full_nums[1])  
     print(sum(result))
 
