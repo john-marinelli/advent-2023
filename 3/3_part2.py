@@ -1,45 +1,129 @@
-GEAR = "*"
+def load_schematic(path):
+    with open(path) as f:
+        schematic = f.read().splitlines()
 
+    schematic = [list(i) for i in schematic]
 
-def is_same_number(y_one, y_two):
-    if len([i for i in range(min(y_one, y_two), max(y_one, y_two))]) < 2:
-        return True
-    return False
+    return schematic
 
+def is_neighbor(point1, point2):
+    if point1[0] != point2[0]:
+        return False
+    if abs(point1[1]-point2[1]) > 1:
+        return False
+    return True
 
-def find_adjacent_nums(x, y, mat):
+def get_adj_nums(x, y, mat):
     adj = []
+    try:
+        if mat[x-1][y-1].isnumeric():
+            adj.append((x-1, y-1))
+    except:
+        pass
+    try:
+        if mat[x-1][y].isnumeric():
+            adj.append((x-1, y))
+    except:
+        pass
+    try:
+        if mat[x][y-1].isnumeric():
+            adj.append((x, y-1))
+    except:
+        pass
+    try:
+        if mat[x+1][y+1].isnumeric():
+            adj.append((x+1, y+1))
+    except:
+        pass
+    try:
+        if mat[x+1][y].isnumeric():
+            adj.append((x+1, y))
+    except:
+        pass
+    try:
+        if mat[x][y+1].isnumeric():
+            adj.append((x, y+1))
+    except:
+        pass
+    try:
+        if mat[x-1][y+1].isnumeric():
+            adj.append((x-1, y+1))
+    except:
+        pass
+    try:
+        if mat[x+1][y-1].isnumeric():
+            adj.append((x+1, y-1))
+    except:
+        pass
 
-    if len([i for i in adj if i[0].isnumeric()]) == 2:
-        if adj[0][1][0] != adj[1][1][0]:
-            return find_full_number(adj[0][1][1], mat[adj[0][1][0]]) * find_full_number(adj[1][1][1], mat[adj[1][1][0]])
+    min_x = min([i[0] for i in adj])
+    min_y = min([i[1] for i in adj])
+    scaled_adj = [(i[0]-min_x, i[1]-min_y) for i in adj]
+    fill_mat = [
+            [False, False, False],
+            [False, False, False],
+            [False, False, False]
+            ]
+    adj_mat = [
+            [None, None, None],
+            [None, None, None],
+            [None, None, None]
+            ]
+    for idx, coord in enumerate(scaled_adj):
+        adj_mat[coord[0]][coord[1]] = adj[idx]
+
+    for coord in scaled_adj:
+        fill_mat[coord[0]][coord[1]] = True
+
+    for idx, row in enumerate(fill_mat):
+        if row[0]:
+            if row[1]:
+                fill_mat[idx][1] = False 
+                if row[2]:
+                    fill_mat[idx][2] = False
+        if row[1]:
+            if row[2]:
+                fill_mat[idx][2] = False
+
+    adj_mat = [[item2 for idx2, item2 in enumerate(item) if fill_mat[idx][idx2]] for idx, item in enumerate(adj_mat)] 
+    adj = [i for j in adj_mat for i in j]
+
+    return adj
+
+
+def get_full_num(y, col):
+    num = []
+    num.append(col[y])
+    for k in range(y+1, len(col)):
+        if col[k].isnumeric():
+            num.append(col[k])
         else:
-            if is_same_number(adj[0][1][1], adj[1][1][1]):
-                return 0
-            else:
-                return find_full_number(adj[0][1][1], mat[adj[0][1][0]]) * find_full_number(adj[1][1][1], mat[adj[1][1][0]])
+            break
 
+    k = y - 1
+    while k >= 0:
+        if col[k].isnumeric():
+           num.insert(0, col[k])
+           k -= 1
+        else:
+            break
 
-def find_full_number(x, arr):
-    res = []
-    res.append(arr[x])
-    last_idx = x
-    if x < len(arr) - 1:
-        for k in range(x+1, len(arr)):
-            if arr[k].isnumeric():
-                res.append(arr[k])
-                last_idx = k
-            else:
-                break
-    if x > 0:
-        k = x - 1
-        while k >= 0:
-            if arr[k].isnumeric():
-                res.insert(0, arr[k])
-                k -= 1
-            else:
-                break
+    return int("".join(num))
 
-    res = int("".join(res))
+def get_pairs(schem):
+    result = []
+    for i, row in enumerate(schem):
+        for j, col in enumerate(row):
+            if schem[i][j] == "*":
+                adjacent_cells = get_adj_nums(i, j, schem)
+                if len(adjacent_cells) == 2:
+                    full_nums = []
+                    for n in adjacent_cells:
+                        full_nums.append(get_full_num(n[1], schem[n[0]]))
+                    print(full_nums)
+                    result.append(full_nums[0] * full_nums[1])  
+    print(sum(result))
 
-    return res, last_idx + 1
+if __name__ == "__main__":
+    schematic = load_schematic("input.txt")
+    get_pairs(schematic)
